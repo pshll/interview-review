@@ -50,3 +50,46 @@ newObj2.field4.child2.child2 = '更改'
 console.log('obj ===>', obj)
 console.log('newObj2 ===>', newObj2)
 newObj2.field5()
+
+// 优化
+const isObj = (val) => {
+	return typeof val === 'object' && val !== null
+}
+const deepClone3 = (target, hash = new WeakMap()) => {
+	if (!isObj(target)) return target
+	if (hash.has(target)) {
+		return hash.get(target)
+	}
+	let result = Array.isArray(target) ? [] : {}
+	hash.set(target, result)
+	Reflect.ownKeys(target).forEach((item) => {
+		if (isObj(item)) {
+			result[item] = deepClone3(target[item], hash)
+		} else {
+			result[item] = target[item]
+		}
+	})
+	return result
+}
+
+function deepClone4(obj, hash = new WeakMap()) {
+	// 处理 null或者undefined
+	if (obj === null) return obj
+	// 处理 日期
+	if (obj instanceof Date) return new Date(obj)
+	// 处理 正则
+	if (obj instanceof RegExp) return new RegExp(obj)
+	// 处理 基础类型或者函数
+	if (typeof obj !== 'object') return obj
+
+	// 对象进行深拷贝
+	if (hash.has(obj)) return hash.get(obj)
+	let cloneObj = new obj.constructor()
+	hash.set(obj, cloneObj)
+	for (const key in hash) {
+		if (obj.hasOwnProperty(key)) {
+			cloneObj[key] = deepClone4(obj[key], hash)
+		}
+	}
+	return cloneObj
+}
